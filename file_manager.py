@@ -16,12 +16,12 @@ class DirMethods:
 		DirMethods.make_dir(DirMethods.out_dir)
 		DirMethods.out_subdir = os.path.join(DirMethods.out_dir,out_subdir)
 		DirMethods.make_dir(DirMethods.out_subdir)
+		return DirMethods.out_subdir
 
 	@staticmethod
 	def make_sub_dir(out_dir):
 		subdir = os.path.join(DirMethods.out_subdir,out_dir) #huinya
 		DirMethods.make_dir(subdir)
-		print subdir
 		return subdir
 
 

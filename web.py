@@ -1,61 +1,53 @@
-import urllib
-import urllib2
 import os
-from lxml import html
+import urllib2
+from bs4 import BeautifulSoup
+
 
 class WebContent:
 
 	url = 'http://joyreactor.cc'
 	webContent = None
-	tree = None
+	soup = None
 	date = None
 	path = None
+	tag = None
+	pages = None
+	subdomain = None
 
-	@staticmethod
-	def download_page():
-		page = open('1.html', 'w')
-		WebContent.page.write(WebContent.webContent)
-		WebContent.page.close
+	def download_post(self, path, post):
+		with open(path, 'w') as f:
+			f.write(str(post))
 	
-	@staticmethod
-	def parse_page():
-		post_array = WebContent.tree.xpath('//div[@class="postContainer"]')
+	def parse_page(self):
+		post_array = self.soup.find_all(class_="postContainer")
+		counter = 0
 		for post in post_array:
-			date = post.xpath('div/div[@class="ufoot"]/div[@class="ufoot_first"]/span[@class="date"]/span/span[@class="date"]/text()')[0]
-			if date == WebContent.date:
-				source_urls = post.xpath('div/div[@class="post_top"]/div[@class="post_content"]/div[@class="image"]')
-				for url in source_urls:
-					if url.xpath('a/@href'):
-						source_url = url.xpath('a/@href')[0]
-					elif url.xpath('img/@src'):
-						source_url = url.xpath('img/@src')[0]
-					elif url.xpath('span/a/@href'):
-						source_url = url.xpath('span/a/@href')[0]
-					else:
-						print "error"
-						continue
-					print source_url
-					source_name = source_url.split('/')[-1][-63:]
-					source_path = os.path.join(WebContent.path, source_name) 
-					urllib.urlretrieve(source_url, source_path)
+			date = post.find(class_="date").find(class_="date").text
+			post_name = post.find(class_="date").text
+			if self.date:
+				if date != self.date:
+					break
+			source_post = post.find(class_="post_content")
+			source_name = post_name + '.html'
+			source_path = os.path.join(self.path, source_name) 
+			self.download_post(source_path,source_post)
+			counter += 1
+		return counter
 
-	@staticmethod
-	def get_next_url():
-		next_url = WebContent.tree.xpath('//a[@class="next"]/@href')
-		return next_url[0]
+	def get_next_url(self):
+		next_url = self.soup.find(class_="next").get('href')
+		return next_url
 
 
-	@staticmethod
-	def get_pages(pages, section, date, path):
-		url = '{}/{}'.format(WebContent.url, section)
-		WebContent.date = date
-		WebContent.path = path
+	def get_pages(self, pages, section):
+		url = '{}/{}'.format(self.url, section)
+		counter = 0
 		for i in range(pages):
-			print url
 			response = urllib2.urlopen(url)
-			WebContent.webContent = response.read()
-			WebContent.tree = html.fromstring(WebContent.webContent)
-			WebContent.parse_page()
-			url = '{}{}'.format(WebContent.url, WebContent.get_next_url())
+			self.webContent = response.read()
+			self.soup = BeautifulSoup(self.webContent, 'html.parser')
+			counter += self.parse_page()
+			url = '{}{}'.format(self.url, self.get_next_url())
+		return counter
 
 
