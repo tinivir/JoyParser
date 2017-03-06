@@ -1,25 +1,31 @@
 from datetime import datetime, timedelta
 from joyreactor import JoyParser
+import click
 
 
 today = datetime.now().strftime('%d.%m.%Y')
-last_year = (datetime.now() - timedelta(days=365)).strftime('%d.%m.%Y')
 
-JoyParser.out_dir = 'out'
-JoyParser.out_subdir = 'default'
-JoyParser.pages = 3
+def validate_date(ctx, param, value):
+	try:
+		datetime.strptime(value, '%d.%m.%Y')
+		return (value)
+	except ValueError:
+		raise click.BadParameter('date need to be in format dd.mm.YYYY')
 
-# count_new = JoyParser.parse_date(today, 'all')
-# count_best = JoyParser.parse_date(today, 'best')
-# print count_new, count_best
-# assert count_new > count_best
+@click.command()
+@click.option('--date', default=today,callback=validate_date, help='Date format dd.mm.YYYY')
+@click.option('--tag', prompt='Tag')
 
-# assert not JoyParser.parse_date(last_year, 'best')
+def joy(date, tag):
+	print date, tag
+	last_year = (datetime.now() - timedelta(days=365)).strftime('%d.%m.%Y')
 
-joy_parser = JoyParser()
-joy_parser.url = 'http://gf.reactor.cc'
-joy_parser.tag = "tag/Stanford%2BPines"
-joy_parser.pages = 5
-joy_parser.out_subdir = 'gf_subdir'
+	JoyParser.out_dir = 'out'
+	JoyParser.out_subdir = 'default'
+	JoyParser.pages = 3
 
-assert joy_parser.parse() == 50
+	count_new = JoyParser.parse_date(date, tag)
+	print count_new
+
+if __name__ == '__main__':
+    joy()

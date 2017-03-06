@@ -38,16 +38,20 @@ class WebContent:
 		next_url = self.soup.find(class_="next").get('href')
 		return next_url
 
-
 	def get_pages(self, pages, section):
 		url = '{}/{}'.format(self.url, section)
 		counter = 0
 		for i in range(pages):
-			response = urllib2.urlopen(url)
+			try:
+				response = urllib2.urlopen(url)
+			except urllib2.HTTPError as e:
+				print e
+				return counter
 			self.webContent = response.read()
 			self.soup = BeautifulSoup(self.webContent, 'html.parser')
 			counter += self.parse_page()
 			url = '{}{}'.format(self.url, self.get_next_url())
+
 		return counter
 
 
