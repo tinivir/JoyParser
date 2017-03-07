@@ -17,7 +17,6 @@ def validate_date(ctx, param, value):
 @click.option('--tag', prompt='Tag')
 
 def joy(date, tag):
-	print date, tag
 	last_year = (datetime.now() - timedelta(days=365)).strftime('%d.%m.%Y')
 
 	JoyParser.out_dir = 'out'
@@ -25,7 +24,7 @@ def joy(date, tag):
 	JoyParser.pages = 3
 
 	count_new = JoyParser.parse_date(date, tag)
-	print count_new
+	print "Posts saved: ", count_new, " on ", date, " with tag ", tag 
 
 if __name__ == '__main__':
     joy()
