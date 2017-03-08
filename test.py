@@ -1,30 +1,54 @@
+import unittest
+import os
+import shutil
+import urllib2
 from datetime import datetime, timedelta
-from joyreactor import JoyParser
-import click
+from subprocess import check_output, call, CalledProcessError
+
+class TestJoyParser(unittest.TestCase):
+
+  def test_today_date(self):
+    today = datetime.now().strftime('%d.%m.%Y')
+
+    output = check_output(["python", "main.py",'{}{}'.format("--date=", today)])
+
+    DIR = os.path.join('out','default','{} {}'.format(today,'new'))
+
+    self.assertEqual(30, len([name for name in os.listdir(DIR) if os.path.isfile(os.path.join(DIR, name))]))
+    self.assertEqual(output, '{} {} {}'.format("Posts saved: 30 on", today, "with tag new\n"))
+
+  def test_last_year(self):
+    last_year = (datetime.now() - timedelta(days=365)).strftime('%d.%m.%Y')
+
+    output = check_output(["python", "main.py",'{}{}'.format("--date=", last_year)])
+
+    DIR = os.path.join('out','default','{} {}'.format(last_year,'new'))
+
+    self.assertEqual(0, len([name for name in os.listdir(DIR) if os.path.isfile(os.path.join(DIR, name))]))
+    
+
+    self.assertEqual(output, '{} {} {}'.format("Posts saved: 0 on", last_year, "with tag new\n"))
+    self.assertEqual(output, 'Posts saved: 0 on {} with tag new\n'.format(last_year))
 
 
-today = datetime.now().strftime('%d.%m.%Y')
 
-def validate_date(ctx, param, value):
-	try:
-		datetime.strptime(value, '%d.%m.%Y')
-		return (value)
-	except ValueError:
-		raise click.BadParameter('date need to be in format dd.mm.YYYY')
+  def test_date_format(self):
+    today = datetime.now().strftime('%Y.%m.%d')
+    with self.assertRaises(CalledProcessError):
+      check_output(["python", "main.py",'{}{}'.format("--date=", today)])
+      
 
-@click.command()
-@click.option('--date', default=today,callback=validate_date, help='Date format dd.mm.YYYY')
-@click.option('--tag', prompt='Tag')
+  def test_tag_format(self):
+    today = datetime.now().strftime('%d.%m.%Y')
+    tag = 'asd'
+    with self.assertRaises(CalledProcessError):
+      check_output(["python", "main.py",'{}{}'.format("--tag=", tag)])
 
-def joy(date, tag):
-	last_year = (datetime.now() - timedelta(days=365)).strftime('%d.%m.%Y')
+  def tearDown(self):
+    if os.path.exists('out'):
+      shutil.rmtree(os.path.join('out'))
 
-	JoyParser.out_dir = 'out'
-	JoyParser.out_subdir = 'default'
-	JoyParser.pages = 3
 
-	count_new = JoyParser.parse_date(date, tag)
-	print "Posts saved: ", count_new, " on ", date, " with tag ", tag 
 
 if __name__ == '__main__':
-    joy()
+  unittest.main()

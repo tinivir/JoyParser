@@ -1,5 +1,6 @@
 import os
 import urllib2
+import click
 from bs4 import BeautifulSoup
 
 
@@ -14,8 +15,14 @@ class WebContent:
 	pages = None
 	subdomain = None
 
-	def download_post(self, path, post):
-		with open(path, 'w') as f:
+	def download_post(self, name, post):
+		source_path = os.path.join(self.path, '{}%s.{}'.format(name,'html')) 
+
+		i = 0
+		while os.path.exists(source_path % i):
+			i += 1
+
+		with open(source_path % i, 'w') as f:
 			f.write(str(post))
 	
 	def parse_page(self):
@@ -28,9 +35,7 @@ class WebContent:
 				if date != self.date:
 					break
 			source_post = post.find(class_="post_content")
-			source_name = post_name + '.html'
-			source_path = os.path.join(self.path, source_name) 
-			self.download_post(source_path,source_post)
+			self.download_post(post_name,source_post)
 			counter += 1
 		return counter
 
@@ -45,7 +50,7 @@ class WebContent:
 			try:
 				response = urllib2.urlopen(url)
 			except urllib2.HTTPError as e:
-				print e
+				raise click.BadParameter("Invalid tag")
 				return counter
 			self.webContent = response.read()
 			self.soup = BeautifulSoup(self.webContent, 'html.parser')
