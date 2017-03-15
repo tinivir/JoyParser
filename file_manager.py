@@ -2,26 +2,19 @@ import os
 
 class DirMethods:
 
-	out_dir = None
-	out_subdir = None
+	#make recursive function with n parameters
+	@staticmethod
+	def make_dir(*args):
+		path = 	""
+		for k in args:
+			path = os.path.join(path, k)
+			if not os.path.exists(path):
+				os.makedirs(path)
+		return path
 
 	@staticmethod
-	def make_dir(out_dir):
-		if not os.path.exists(out_dir):
-			os.makedirs(out_dir)
-
-	@staticmethod
-	def make_def_dir(out_dir,out_subdir):
-		DirMethods.out_dir = out_dir
-		DirMethods.make_dir(DirMethods.out_dir)
-		DirMethods.out_subdir = os.path.join(DirMethods.out_dir,out_subdir)
-		DirMethods.make_dir(DirMethods.out_subdir)
-		return DirMethods.out_subdir
-
-	@staticmethod
-	def make_sub_dir(out_dir):
-		subdir = os.path.join(DirMethods.out_subdir,out_dir) #huinya
-		DirMethods.make_dir(subdir)
-		return subdir
+	def dir_len(path):
+		if path:
+			return len([name for name in os.listdir(path) if os.path.isfile(os.path.join(path, name))])
 
 

@@ -14,17 +14,14 @@ def validate_date(ctx, param, value):
 
 @click.command()
 @click.option('--date', default=today,callback=validate_date, help='Date format dd.mm.YYYY')
-@click.option('--tag', default="new")
+@click.option('--section', default="new")
+@click.option('--path', default="default")
+def joy(date, section, path):
+	joy_parser = JoyParser('out', path, 3)
 
-def joy(date, tag):
-	
-	JoyParser.out_dir = 'out'
-	JoyParser.out_subdir = 'default'
-	JoyParser.pages = 3
+	count = joy_parser.parse_date(date, section)
 
-	count_new = JoyParser.parse_date(date, tag)
-
-	print '{}: {} {} {} {} {}'.format("Posts saved", count_new, "on", date, "with tag", tag)
+	print 'Posts saved: {} on {} with section {}'.format(count, date, section)
 
 if __name__ == '__main__':
     joy()
